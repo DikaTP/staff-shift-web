@@ -1,9 +1,23 @@
 # Staff Shift Web
-This project is for project assignment regarding recruitment process
+This app is a part of project assignment for recruitment
 
-In the project directory, you can run:
+# Common setup
+Clone the repo and install the dependencies.
 
-### `npm start`
+```bash
+git clone https://github.com/DikaTP/staff-shift-web.git
+cd staff-shift-web
+```
+
+```bash
+npm install
+```
+
+To start the server, run the following
+
+```bash
+npm start
+```
 
 Runs the app in the development mode.\
 Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
