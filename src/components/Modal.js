@@ -68,9 +68,20 @@ function FormModal(props) {
   const [date, setDate] = useState('')
   const [startTime, setStartTime] = useState('')
   const [endTime, setEndTime] = useState('')
+  const [disableButton, setDisableButton] = useState(false);
+  const [disableCancelButton, setDisableCancelButton] = useState(false);
+
+  let initFormError = {
+    name: '',
+    date: '',
+    start_time: '',
+    end_time: '',
+  }
+  const [formError, setFormError] = useState(initFormError)
 
   const handleInputChange = (e) => {
     let inputName = e.target.name
+    setFormError(initFormError)
     switch(inputName) {
       case 'name':
         setName(e.target.value)
@@ -90,7 +101,60 @@ function FormModal(props) {
   }
 
   const submitForm = () => {
+    let isFormError = false
+    let formError = initFormError
+    let formData = {
+      name: name,
+      date: date,
+      start_time: startTime,
+      end_time: endTime,
+    }
+
+    for(let key in formData) {
+      if(formData[key] === '') {
+        formError[key] = key.replace('_', ' ') + ' cannot be empty!'
+        isFormError = true
+      }
+    }
+
+    if(!isFormError && formData['start_time'] === formData['end_time']) {
+      let errorMessage = 'start time and end time must be different '
+      formError.start_time = errorMessage
+      formError.end_time = errorMessage
+      isFormError = true
+    }
+
+    if(!isFormError && formData['start_time'] > formData['end_time']) {
+      let errorMessage = 'end time have to be after start time '
+      formError.end_time = errorMessage
+      isFormError = true
+    }
     
+    if(!isFormError && new Date(formData['date'] + ' ' + formData['start_time'])  < new Date() ) {
+      let errorMessage = 'shift cannot be backdated'
+      formError.date = errorMessage
+      formError.start_time = errorMessage
+      isFormError = true
+    }
+
+    if(isFormError) {
+      setFormError(formError)
+      return
+    }
+
+    setDisableButton(true)
+    setDisableCancelButton(true)
+    if(props.data.action === 'Edit') formData.id = props.data.id
+    props.submitFormHandler(formData).then(() =>{
+        setDisableButton(false)
+        setDisableCancelButton(false)
+      }
+    )
+  }
+
+  const closeModal = () => {
+    setFormError(initFormError)
+    props.closeModal()
   }
 
   useEffect( () => {
@@ -101,7 +165,7 @@ function FormModal(props) {
   }, [props.data])
   return (
     <Fragment>
-      <Overlay show={props.show} closeModal={submitForm} />
+      <Overlay show={props.show} closeModal={props.closeModal} />
       <BaseModal show={props.show}>
         <div className='modal-content'>
           <div className='modal-header'>
@@ -112,24 +176,28 @@ function FormModal(props) {
               <div className='input-container'>
                 <label>Name</label>
                 <input type='text' value={name} name='name' onChange={handleInputChange}></input>
+                <span className='error'>{formError.name}</span>
               </div>
               <div className='input-container'>
                 <label>Date</label>
-                <input type='text' value={date} name='date' onChange={handleInputChange}></input>
+                <input type='date' value={date} name='date' onChange={handleInputChange}></input>
+                <span className='error'>{formError.date}</span>
               </div>
               <div className='input-container'>
                 <label>From</label>
-                <input type='text' value={startTime} name='start_time' onChange={handleInputChange}></input>
+                <input type='time' value={startTime} name='start_time' onChange={handleInputChange}></input>
+                <span className='error'>{formError.start_time}</span>
               </div>
               <div className='input-container'>
                 <label>To</label>
-                <input type='text' value={endTime} name='end_time' onChange={handleInputChange}></input>
+                <input type='time' value={endTime} name='end_time' onChange={handleInputChange}></input>
+                <span className='error'>{formError.end_time}</span>
               </div>
             </form>
           </div>
           <div className='modal-footer'>
-            <button className='modal-close-button' onClick={() => props.closeModal()}>Cancel</button>
-            <button className='modal-save-button' onClick={() => props.closeModal()}>Save</button>
+            <button className='modal-close-button' disabled={disableCancelButton} onClick={() => closeModal()}>Cancel</button>
+            <button className='modal-save-button' disabled={disableButton} onClick={() => submitForm()}>Save</button>
           </div>
         </div>
       </BaseModal>

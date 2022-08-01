@@ -348,13 +348,22 @@ table tbody tr:hover td:not(:last-child) {
   margin-bottom: 5px;
 }
 
-.input-container input[type=text] {
+.input-container input {
   padding: 10px;
   border: 1px solid var(--gray);
   border-radius: 4px;
 }
 
-.input-container input[type=text]:focus {
+.input-container input:focus {
   border: 1px solid var(--dark-gray);
   outline: none;
+}
+
+.input-container .error {
+  font-size: 0.75rem;
+  color: var(--red);
+}
+
+button:disabled {
+  opacity: 0.5;
 }

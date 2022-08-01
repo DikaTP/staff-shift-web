@@ -119,9 +119,47 @@ export function ShiftList(props) {
       }
 
       const error = await response.json()
-      console.log(error)
       setIsLoaded(true)
       setError(error)
+    } catch(error) {
+      setIsLoaded(true)
+      setError(error)
+    }
+  }
+
+  const submitFormHandler = async(formData) => {
+    try{
+      let apiUrl = 'http://localhost:8080/api/v1/shift'
+      let isEdit = formData.id !== undefined
+      apiUrl += isEdit ? ('/' + formData.id) : ''
+      let method = isEdit ? 'PUT' : 'POST'
+      let postData = new FormData()
+      for(let key in formData) {
+        postData.append(key, formData[key])
+      }
+
+      const response = await fetch(apiUrl, {
+        headers: {'Content-type': 'application/json'},
+        method: method,
+        body: JSON.stringify(formData)
+      })
+      if(response.ok) {
+          setIsLoaded(true)
+          setShowFormModal(false)
+          setModalMessage(`Shift ${isEdit ? 'Edited' : 'Created'}!`)
+          setNotifModal(true)
+          setTimeout(() => setNotifModal(false), 3000)
+          getShiftList()
+          return
+      }
+
+      const error = await response.json()
+      setIsLoaded(true)
+      setShowFormModal(false)
+      setModalMessage(error.message)
+      setNotifModal(true)
+      setTimeout(() => setNotifModal(false), 3000)
+      // setError(error)
     } catch(error) {
       setIsLoaded(true)
       setError(error)
@@ -167,7 +205,7 @@ export function ShiftList(props) {
           </div>
         </div>
         <DetailModal show={showDetailModal} closeModal={detailModalHandler} data={detailContent} />
-        <FormModal show={showFormModal} closeModal={formModalHandler} data={formModalData} />
+        <FormModal show={showFormModal} closeModal={formModalHandler} submitFormHandler={submitFormHandler} data={formModalData} />
         <DeleteModal show={showDeleteModal} closeModal={deleteModalHandler} data={deleteModalContent} confirmHandler={deleteShift} />
         <NotifModal show={notifModal} message={modalMessage} />
         <Footer />
